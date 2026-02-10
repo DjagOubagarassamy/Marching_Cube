@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <cmath>
 using namespace std;
 struct point3D{
@@ -272,6 +274,8 @@ int lookuptable [256][13]=
 };
 
 
+
+
 point3D*** allocGrille(T_XYZ grid_size)
 {
     point3D*** grille = new point3D **[grid_size.x];
@@ -348,12 +352,16 @@ int calculIndex(int sommets[8]) {
     return index;
 }
 
+
 void marching_cube(point3D*** grille, T_XYZ grid_size){
-    int count_tri = 0;
-    int count_cube = 0;
+    int nb_sommets = 0;
+    int count_sommets = 0;
+    string const nomFichier("C://Users/ouba-/Desktop/Dev/Marching_cube/sphere.obj");
+    ofstream monFlux(nomFichier.c_str());
+    monFlux << "Sphere001" << endl;
+
     for (int i = 0; i < grid_size.x - 1; i++) {
-        cout << "Cube" << count_cube << endl;
-        count_cube++;
+        // monFlux << "Cube" << count_cube << endl;
         for (int j = 0; j < grid_size.y - 1; j++) {
             for (int k = 0; k < grid_size.z - 1; k++) {
                 int tab[8]={
@@ -369,17 +377,23 @@ void marching_cube(point3D*** grille, T_XYZ grid_size){
                 int index=calculIndex(tab);
                 for(int l = 0; l < 13; l++) {
                     if (lookuptable[index][l] != -1) {
-                        cout << "Triangle" << " " << count_tri << endl; 
-                        count_tri++;
-                        cout << aretes[lookuptable[index][l]][0] << " " << " ; ";
-                        cout << aretes[lookuptable[index][l]][1] << " " << " ; ";
-                        cout << aretes[lookuptable[index][l]][2]<<endl;
+                        // monFlux << "Triangle" << " " << count_tri << endl; 
+                        // count_tri++;
+                        monFlux << "v " ;
+                        monFlux <<i+ aretes[lookuptable[index][l]][0] << " ";
+                        monFlux <<j+ aretes[lookuptable[index][l]][1] << " ";
+                        monFlux <<k+ aretes[lookuptable[index][l]][2]<<endl;
+                        count_sommets++;
                     }
                 }
                 
             }
         }
     }
+    for (int i = 0; i < count_sommets; i++) {
+        monFlux << "f " << i << " " << i+1 << " " << i+2 << endl;
+    }
+
 }
 
 int main()
@@ -401,4 +415,6 @@ int main()
     point3D*** grille = allocGrille(grid_size);
     init_sphere(grille, grid_size, centre, radius);
     marching_cube(grille, grid_size);
+
 }
+
