@@ -272,25 +272,25 @@ int lookuptable [256][13]=
 };
 
 
-point3D*** allocGrille(int size_x, int size_y, int size_z)
+point3D*** allocGrille(T_XYZ grid_size)
 {
-    point3D*** grille = new point3D **[size_x];
-    for (int i = 0; i < size_x; i++)
+    point3D*** grille = new point3D **[grid_size.x];
+    for (int i = 0; i < grid_size.x; i++)
     {
-        grille[i] = new point3D * [size_y];
+        grille[i] = new point3D * [grid_size.y];
     }
-    for (int i = 0; i < size_x; i++){
-        for(int j=0; j<size_y; j++)
-            grille[i][j] = new point3D[size_z];    
+    for (int i = 0; i < grid_size.x; i++){
+        for(int j=0; j<grid_size.y; j++)
+            grille[i][j] = new point3D[grid_size.z];    
     }
     return grille;
 }
 
 
-void deletegrille(point3D***grille, int size_y, int size_x)
+void deletegrille(point3D***grille, T_XYZ grid_size)
 {
-    for (int i = 0; i<size_x; i++){
-        for (int j = 0; j<size_y; j++){
+    for (int i = 0; i<grid_size.x; i++){
+        for (int j = 0; j<grid_size.y; j++){
             delete[] grille[i][j];
         }
         delete[] grille[i];
@@ -309,12 +309,74 @@ bool distance_test(int x, int y, int z, int cx, int cy, int cz, int rayon)
     return false;
 }
 
-int init_sphere(point3D*** grille, int size_x, int size_y, int size_z, int cx, int cy, int cz, int rayon)
+void init_sphere(point3D*** grille, T_XYZ grid_size, T_XYZ centre, int rayon)
 {
-    for (int i = 0; i < size_x; i++){
-        for (int j = 0; j < size_y; j++){
-            for (int k = 0; k < size_z; k++){
-                    grille[i][j][k].allume = distance_test(i, j, k, cx, cy, cz, rayon);
+    for (int i = 0; i < grid_size.x; i++){
+        for (int j = 0; j < grid_size.y; j++){
+            for (int k = 0; k < grid_size.z; k++){
+                    grille[i][j][k].allume = distance_test(i, j, k, centre.x, centre.y, centre.z, rayon);
+            }
+        }
+    }
+}
+
+double aretes[12][3] = {
+    {0.5, 0, 0},
+    {1, 0.5, 0},
+    {0.5, 1, 0},
+    {0, 0.5, 0},
+    {0.5, 0, 1},
+    {1, 0.5, 1},
+    {0.5, 1, 1},
+    {0, 0.5, 1},
+    {0.5, 0, 0.5},
+    {1, 0.5, 0.5},
+    {0.5, 1, 0.5},
+    {0, 0.5, 0.5},
+};
+
+
+
+
+int calculIndex(int sommets[8]) {
+    int index = 0;
+    for (int i = 0; i < 8; i++) {
+        if (sommets[i] == 1) {
+            index += (1 << i); 
+        }
+    }
+    return index;
+}
+
+void marching_cube(point3D*** grille, T_XYZ grid_size){
+    int count_tri = 0;
+    int count_cube = 0;
+    for (int i = 0; i < grid_size.x - 1; i++) {
+        cout << "Cube" << count_cube << endl;
+        count_cube++;
+        for (int j = 0; j < grid_size.y - 1; j++) {
+            for (int k = 0; k < grid_size.z - 1; k++) {
+                int tab[8]={
+                    grille[i][j][k].allume,
+                    grille[i + 1][j][k].allume,
+                    grille[i + 1][j + 1][k].allume,
+                    grille[i][j + 1][k].allume,
+                    grille[i][j][k + 1].allume,
+                    grille[i + 1][j][k + 1].allume,
+                    grille[i + 1][j + 1][k + 1].allume,
+                    grille[i][j + 1][k + 1].allume
+                };
+                int index=calculIndex(tab);
+                for(int l = 0; l < 13; l++) {
+                    if (lookuptable[index][l] != -1) {
+                        cout << "Triangle" << " " << count_tri << endl; 
+                        count_tri++;
+                        cout << aretes[lookuptable[index][l]][0] << " " << " ; ";
+                        cout << aretes[lookuptable[index][l]][1] << " " << " ; ";
+                        cout << aretes[lookuptable[index][l]][2]<<endl;
+                    }
+                }
+                
             }
         }
     }
@@ -325,20 +387,18 @@ int main()
     struct T_XYZ centre;
     struct T_XYZ grid_size;
 
+    grid_size.x=20;
+    grid_size.y=20; 
+    grid_size.z=20;
+
+
     centre.x = grid_size.x / 2;
     centre.y = grid_size.y / 2;
     centre.z = grid_size.z / 2;
 
-    int size_x = 20;
-    int size_y = 20;
-    int size_z = 20;
-    int centre_x = size_x / 2;
-    int centre_y = size_y / 2;
-    int centre_z = size_z / 2;
-
     // centre x/2 y/2 z/2
     int radius = 5;
-    point3D*** grille = allocGrille(size_x,size_y, size_z);
-    init_sphere(grille, size_x, size_y, size_z, centre_x, centre_y, centre_z, radius);
-
+    point3D*** grille = allocGrille(grid_size);
+    init_sphere(grille, grid_size, centre, radius);
+    marching_cube(grille, grid_size);
 }
