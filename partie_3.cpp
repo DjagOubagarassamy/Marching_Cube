@@ -326,17 +326,17 @@ void init_sphere(point3D*** grille, T_XYZ grid_size, T_XYZ centre, int rayon)
 
 double aretes[12][3] = {
     {0.5, 0, 0},
-    {1, 0.5, 0},
-    {0.5, 1, 0},
+    {1.0, 0.5, 0},
+    {0.5, 1.0, 0},
     {0, 0.5, 0},
-    {0.5, 0, 1},
-    {1, 0.5, 1},
-    {0.5, 1, 1},
-    {0, 0.5, 1},
-    {0.5, 0, 0.5},
-    {1, 0.5, 0.5},
-    {0.5, 1, 0.5},
-    {0, 0.5, 0.5},
+    {0.5, 0, 1.0},
+    {1.0, 0.5, 1.0},
+    {0.5, 1.0, 1.0},
+    {0, 0.5, 1.0},
+    {0, 0, 0.5},
+    {1.0, 0, 0.5},
+    {1.0, 1.0, 0.5},
+    {0, 1.0, 0.5},
 };
 
 
@@ -358,7 +358,7 @@ void marching_cube(point3D*** grille, T_XYZ grid_size){
     int count_sommets = 0;
     string const nomFichier("C://Users/ouba-/Desktop/Dev/Marching_cube/sphere.obj");
     ofstream monFlux(nomFichier.c_str());
-    monFlux << "Sphere001" << endl;
+    monFlux << "g Sphere001" << endl;
 
     for (int i = 0; i < grid_size.x - 1; i++) {
         // monFlux << "Cube" << count_cube << endl;
@@ -390,7 +390,7 @@ void marching_cube(point3D*** grille, T_XYZ grid_size){
             }
         }
     }
-    for (int i = 0; i < count_sommets; i++) {
+    for (int i = 1; i <= count_sommets; i += 3) {
         monFlux << "f " << i << " " << i+1 << " " << i+2 << endl;
     }
 
@@ -401,9 +401,9 @@ int main()
     struct T_XYZ centre;
     struct T_XYZ grid_size;
 
-    grid_size.x=20;
-    grid_size.y=20; 
-    grid_size.z=20;
+    grid_size.x=50;
+    grid_size.y=50; 
+    grid_size.z=50;
 
 
     centre.x = grid_size.x / 2;
@@ -411,7 +411,7 @@ int main()
     centre.z = grid_size.z / 2;
 
     // centre x/2 y/2 z/2
-    int radius = 5;
+    int radius = 20;
     point3D*** grille = allocGrille(grid_size);
     init_sphere(grille, grid_size, centre, radius);
     marching_cube(grille, grid_size);
